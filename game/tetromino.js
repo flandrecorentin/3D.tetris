@@ -7,6 +7,8 @@ let x = 0;
 let y = 0;
 let z = 0;
 let color = 0;
+let pivot = 0;
+let letterPiece = 'X';
 let drawnBlocks = [];
 
 export function init(letter) {
@@ -17,6 +19,7 @@ export function init(letter) {
     color = 0;
     drawnBlocks = [];
 
+    letterPiece = letter
     const ref = Object.assign({}, TETROMINOS[letter]);
     ref.blocks.forEach(function (refBlock) {
         blocks.push([refBlock[0], refBlock[1], refBlock[2]]);
@@ -26,6 +29,7 @@ export function init(letter) {
     y = HEIGHT;
     z = Math.floor(Math.random() * (ref.maxZ - ref.minZ + 1)) + ref.minZ;
     color = ref.color;
+    pivot = ref.pivot;
 
     blocks.forEach(function (block) {
         block[0] += x;
@@ -54,7 +58,7 @@ export function draw(scene) {
 export function play(tetris) {
     if (DEBUG) { blocks[0][1] }
 
-    // if we can't apply or on the ground
+    // Impossible to apply gravity
     blocks.forEach(function (block) {
         let transfo = TETRIS.transform(block[0], block[1] - 1, block[2])
 
@@ -63,6 +67,7 @@ export function play(tetris) {
                 endGame();
             }
             else {
+                // See if we can remove one or multiple level(s)
                 changeTetromino(tetris);
             }
             return;
@@ -99,7 +104,7 @@ function endGame() {
     console.log("End game");
 }
 
-function randomPiece() {
+export function randomPiece() {
     const random = Math.floor(Math.random() * (TETROMINOS_MAPPING.size));
     return TETROMINOS_MAPPING.get(random);
 }
@@ -130,7 +135,7 @@ export function move(direction, tetris) {
             play(tetris);
             break;
         default:
-            console.log("Invalid direction");
+            console.log("Non-existent direction");
     }
 
     let validity = true
@@ -155,4 +160,61 @@ export function move(direction, tetris) {
         drawnBlocks[index].position.z = block[2];
         index++;
     })
+}
+
+// No rotation for some 'O' ?
+// Rotate operation implies to precises the pivot index block
+export function rotate(direction, tetris) {
+    if (DEBUG) { console.log("rotate on " + direction + " with pivot " + pivot) }
+
+    let blocksRotated = []
+    blocks.forEach(function (block) {
+        blocksRotated.push([block[0], block[1], block[2]]);
+    })
+
+    let validity = true
+    for (let index = 0; index < blocks.length; index++) {
+        if (index == pivot) { continue }
+        else {
+            switch (direction) {
+                case 'X':
+                    blocksRotated[index][1] = (blocks[index][2] - blocks[pivot][2]) + blocks[pivot][1]
+                    blocksRotated[index][2] = - (blocks[index][1] - blocks[pivot][1]) + blocks[pivot][2]
+                    break;
+                case 'Y':
+                    blocksRotated[index][0] = - (blocks[index][2] - blocks[pivot][2]) + blocks[pivot][0]
+                    blocksRotated[index][2] = (blocks[index][0] - blocks[pivot][0]) + blocks[pivot][2]
+                    break;
+                case 'Z':
+                    blocksRotated[index][0] = (blocks[index][1] - blocks[pivot][1]) + blocks[pivot][0]
+                    blocksRotated[index][1] = - (blocks[index][0] - blocks[pivot][0]) + blocks[pivot][1]
+                    break;
+                default:
+                    console.log("Non-existent rotation")
+            }
+
+            if (tetris.get(blocksRotated[index]) != undefined
+                || blocksRotated[index][0] > 2
+                || blocksRotated[index][0] < -2
+                || blocksRotated[index][2] > 2
+                || blocksRotated[index][2] < -2
+                || blocksRotated[index][1] < 0) {
+                validity = false;
+            }
+        }
+    }
+
+    if (validity) {
+        let index = 0;
+        blocks.forEach(function (block) {
+            blocks[index][0] = blocksRotated[index][0]
+            blocks[index][1] = blocksRotated[index][1]
+            blocks[index][2] = blocksRotated[index][2]
+
+            drawnBlocks[index].position.x = block[0];
+            drawnBlocks[index].position.y = block[1];
+            drawnBlocks[index].position.z = block[2];
+            index++;
+        })
+    }
 }

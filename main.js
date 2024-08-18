@@ -14,7 +14,7 @@ function main() {
     let prevTime = 0;
     let tetris = new Map();
     TETRIS.initTetris(tetris);
-    TETROMINO.init('O');
+    TETROMINO.init(TETROMINO.randomPiece());
 
     const canvas = document.querySelector('#c');
     const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
@@ -29,7 +29,7 @@ function main() {
     }
 
     const gui = new GUI();
-    gui.add(camera, 'fov', 55, 150).onChange(updateCamera);
+    gui.add(camera, 'fov', 25, 150).onChange(updateCamera);
 
     const controls = new OrbitControls(camera, canvas);
     controls.target.set(0, 5, 0);
@@ -127,7 +127,7 @@ function main() {
             camera.position.y = 1
         }
 
-        if (Math.abs(time - prevTime) > 500) {// TODO change time
+        if (Math.abs(time - prevTime) > 3000) {// TODO change time
             prevTime = time
             applyGravity()
         }
@@ -139,7 +139,7 @@ function main() {
         }
 
         document.querySelector('#time').textContent = 'Time : ' + Math.round(time / 1000) + 's';
-        document.querySelector('#score').textContent = 'Score : ' + score;
+        document.querySelector('#score').textContent = 'Score : ' + score; // TODO : Score working
         renderer.render(scene, camera);
         requestAnimationFrame(render);
     }
@@ -171,6 +171,18 @@ function main() {
         scene.add(controlRight);
         scene.add(controlGravity);
 
+        let controlRotX = new THREE.Mesh(cylinderGeometry, material);
+        controlRotX.position.set(6, -BLOCK.UNIT_SIZE / 2, 2.5);
+
+        let controlRotY = new THREE.Mesh(cylinderGeometry, material);
+        controlRotY.position.set(6, -BLOCK.UNIT_SIZE / 2, 0);
+
+        let controlRotZ = new THREE.Mesh(cylinderGeometry, material);
+        controlRotZ.position.set(6, -BLOCK.UNIT_SIZE / 2, -2.5);
+
+        scene.add(controlRotX);
+        scene.add(controlRotY);
+        scene.add(controlRotZ);
 
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
@@ -189,6 +201,10 @@ function main() {
             const intersectsRight = raycaster.intersectObject(controlRight);
             const intersectsGravity = raycaster.intersectObject(controlGravity);
 
+            const intersectsRotX = raycaster.intersectObject(controlRotX);
+            const intersectsRotY = raycaster.intersectObject(controlRotY);
+            const intersectsRotZ = raycaster.intersectObject(controlRotZ);
+
             if (intersectsUp.length > 0) {
                 if (DEBUG) { console.log('controlUp clicked!') }
                 TETROMINO.move('up', tetris);
@@ -204,6 +220,15 @@ function main() {
             } else if (intersectsGravity.length > 0) {
                 if (DEBUG) { console.log('controlGravity clicked!') }
                 TETROMINO.move('gravity', tetris);
+            } else if (intersectsRotX.length > 0) {
+                if (DEBUG) { console.log('controlRotX clicked!') }
+                TETROMINO.rotate('X', tetris);
+            } else if (intersectsRotY.length > 0) {
+                if (DEBUG) { console.log('controlRotY clicked!') }
+                TETROMINO.rotate('Y', tetris);
+            } else if (intersectsRotZ.length > 0) {
+                if (DEBUG) { console.log('controlRotZ clicked!') }
+                TETROMINO.rotate('Z', tetris);
             }
         });
     }
