@@ -43,26 +43,20 @@ function main() {
 
         const planeSize = 5;
 
-        const loader = new THREE.TextureLoader();
-        const texture = loader.load('./public/pannel5.png');
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.magFilter = THREE.NearestFilter;
-        const repeats = planeSize / 5;
-
-        texture.repeat.set(repeats, repeats);
-
         const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
         const planeMat = new THREE.MeshPhongMaterial({
-            map: texture,
             side: THREE.DoubleSide,
+            color: 0xDDDDDD
         });
         const mesh = new THREE.Mesh(planeGeo, planeMat);
         mesh.rotation.x = Math.PI * - .5;
-        mesh.position.y = mesh.position.y - BLOCK.UNIT_SIZE / 2
+        mesh.position.y = mesh.position.y - BLOCK.UNIT_SIZE / 2;
         mesh.receiveShadow = true;
         scene.add(mesh);
 
+        const gridHelper = new THREE.GridHelper(planeSize, planeSize, 0x333333, 0x333333);
+        gridHelper.position.y -= BLOCK.UNIT_SIZE / 2;
+        scene.add(gridHelper);
     }
 
     {
