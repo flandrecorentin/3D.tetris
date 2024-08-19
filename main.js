@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
-import { PI, DOUBLE_PI, DEBUG } from './const.js';
+import { PI, DOUBLE_PI, DEBUG, WIDTH } from './const.js';
 import * as CAMERA from './game/camera.js';
 import * as BLOCK from './game/block.js';
 import * as TETROMINO from './game/tetromino.js';
@@ -11,6 +11,7 @@ import * as TETRIS from './game/tetris.js';
 function main() {
 
     let score = 0;
+    let speed = 1;
     let prevTime = 0;
     let tetris = new Map();
     TETRIS.initTetris(tetris);
@@ -98,8 +99,6 @@ function main() {
         addControls(scene)
     }
 
-
-
     function resizeRendererToDisplaySize(renderer) {
 
         const canvas = renderer.domElement;
@@ -117,7 +116,7 @@ function main() {
     }
 
     function applyGravity() {
-        TETROMINO.play(tetris)
+        TETROMINO.play(tetris, scene)
         TETROMINO.draw(scene)
     }
 
@@ -139,7 +138,8 @@ function main() {
         }
 
         document.querySelector('#time').textContent = 'Time : ' + Math.round(time / 1000) + 's';
-        document.querySelector('#score').textContent = 'Score : ' + score; // TODO : Score working
+        document.querySelector('#score').textContent = 'Score : ' + score; // TODO : Make the score working
+        document.querySelector('#speed').textContent = 'Speed : ' + parseFloat(speed.toFixed(2)) + " ticks/s"; // TODO : Make the speed as expected
         renderer.render(scene, camera);
         requestAnimationFrame(render);
     }
@@ -207,19 +207,19 @@ function main() {
 
             if (intersectsUp.length > 0) {
                 if (DEBUG) { console.log('controlUp clicked!') }
-                TETROMINO.move('up', tetris);
+                TETROMINO.move('up', tetris, scene);
             } else if (intersectsDown.length > 0) {
                 if (DEBUG) { console.log('controlDown clicked!') }
-                TETROMINO.move('down', tetris);
+                TETROMINO.move('down', tetris, scene);
             } else if (intersectsLeft.length > 0) {
                 if (DEBUG) { console.log('controlLeft clicked!') }
-                TETROMINO.move('left', tetris);
+                TETROMINO.move('left', tetris, scene);
             } else if (intersectsRight.length > 0) {
                 if (DEBUG) { console.log('controlRight clicked!') }
-                TETROMINO.move('right', tetris);
+                TETROMINO.move('right', tetris, scene);
             } else if (intersectsGravity.length > 0) {
                 if (DEBUG) { console.log('controlGravity clicked!') }
-                TETROMINO.move('gravity', tetris);
+                TETROMINO.move('gravity', tetris, scene);
             } else if (intersectsRotX.length > 0) {
                 if (DEBUG) { console.log('controlRotX clicked!') }
                 TETROMINO.rotate('X', tetris);

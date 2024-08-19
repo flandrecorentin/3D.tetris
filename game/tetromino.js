@@ -1,4 +1,4 @@
-import { TETROMINOS, TETROMINOS_MAPPING, HEIGHT, DEBUG } from '../const.js';
+import { TETROMINOS, TETROMINOS_MAPPING, HEIGHT, WIDTH, DEBUG } from '../const.js';
 import * as BLOCK from './block.js';
 import * as TETRIS from './tetris.js';
 
@@ -51,30 +51,107 @@ export function init(letter) {
 export function draw(scene) {
     if (DEBUG) { console.log(blocks) }
     drawnBlocks.forEach(function (drawnBlock) {
+        drawnBlock.class = "block";
         scene.add(drawnBlock);
     })
 }
 
-export function play(tetris) {
+export function play(tetris, scene) {
     if (DEBUG) { blocks[0][1] }
 
     // Impossible to apply gravity
+    let end = false;
+    let next = true;
     blocks.forEach(function (block) {
         let transfo = TETRIS.transform(block[0], block[1] - 1, block[2])
-
         if (tetris.get(transfo) != undefined) {
             if (block[1] == HEIGHT) {
-                endGame();
+                end = true;
             }
             else {
-                // See if we can remove one or multiple level(s)
-                changeTetromino(tetris);
+                next = false;
             }
-            return;
         }
     })
+    if (end) { endGame() }
+    else if (!next) {
+        addTetrominoTo(tetris);
+        updateLevels(tetris, scene);
+        changeTetromino(tetris);
+    }
+    else { applyGravity() }
 
-    applyGravity();
+}
+
+function addTetrominoTo(tetris) {
+    let index = 0;
+    blocks.forEach(function (block) {
+        tetris.set(TETRIS.transform2(block), color);
+        index++;
+    })
+}
+
+function updateLevels(tetris, scene) {
+    let levelsConcerned = []
+    blocks.forEach(function (block) {
+        if (!levelsConcerned.includes(block[1])) { levelsConcerned.push(block[1]) }
+    })
+
+    let levelsToDelete = []
+    const min = Math.floor(- WIDTH / 2 + 0.5);
+    const max = Math.floor(WIDTH / 2 + 0.5);
+    levelsConcerned.forEach(function (level) {
+        let validity = true;
+        for (let x = min; x < max; x++) {
+            for (let z = min; z < max; z++) {
+                const transfo = TETRIS.transform(x, level, z)
+                if (!tetris.has(transfo)) {
+                    validity = false;
+                    break;
+                }
+            }
+        }
+        if (validity) { levelsToDelete.push(level) }
+    })
+
+    if (DEBUG && levelsToDelete.length != 0) console.log("Levels to delete: " + levelsToDelete)
+
+
+    levelsToDelete.forEach(function (level) {
+        for (let x = min; x < max; x++) {
+            for (let z = min; z < max; z++) {
+                tetris.delete(TETRIS.transform(x, level, z))
+            }
+        }
+
+        const drawnBlocksToDelete = scene.children.filter(obj => obj.class == "block"
+            && obj.position.y == level);
+        drawnBlocksToDelete.forEach(function (drawnBlockToDelete) {
+            scene.remove(drawnBlockToDelete)
+        })
+
+
+        const firstIndexNextLevel = TETRIS.getFirstIndexNextLevel(level);
+
+        let keyBlocksToDown = []
+        for (const key of tetris.keys()) {
+            if (key >= firstIndexNextLevel) {
+                keyBlocksToDown.push(key);
+            }
+        }
+
+        keyBlocksToDown.forEach(function (key) {
+            tetris.set(key - WIDTH * WIDTH, tetris.get(key));
+            tetris.delete(key);
+        })
+
+        const drawnBlocksToDown = scene.children.filter(obj => obj.class == "block"
+            && obj.position.y > level);
+        drawnBlocksToDown.forEach(function (drawnBlockToDown) {
+            drawnBlockToDown.position.y = drawnBlockToDown.position.y - 1
+        })
+    })
+
 }
 
 function applyGravity() {
@@ -89,11 +166,6 @@ function applyGravity() {
 function changeTetromino(tetris) {
     const letter = randomPiece();
     if (DEBUG) { console.log("change Tetromino: " + letter) }
-
-    blocks.forEach(function (block) {
-        tetris.set(TETRIS.transform2(block), color);
-    })
-
     init(letter);
 }
 
@@ -109,7 +181,7 @@ export function randomPiece() {
     return TETROMINOS_MAPPING.get(random);
 }
 
-export function move(direction, tetris) {
+export function move(direction, tetris, scene) {
     let incrementTransform = 0;
     let incrementX = 0;
     let incrementZ = 0;
@@ -131,8 +203,8 @@ export function move(direction, tetris) {
             incrementTransform = +5;
             break;
         case 'gravity':
-            play(tetris);
-            play(tetris);
+            play(tetris, scene);
+            play(tetris, scene);
             break;
         default:
             console.log("Non-existent direction");
@@ -162,8 +234,7 @@ export function move(direction, tetris) {
     })
 }
 
-// No rotation for some 'O' ?
-// Rotate operation implies to precises the pivot index block
+// Rotate operation implies to precises the pivot index block in TETROMINOS (const.js)
 export function rotate(direction, tetris) {
     if (DEBUG) { console.log("rotate on " + direction + " with pivot " + pivot) }
 

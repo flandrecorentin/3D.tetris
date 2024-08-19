@@ -3,7 +3,7 @@ import { WIDTH } from '../const.js';
 export function initTetris(tetris) {
     for (let i = -2; i < 3; i++) {
         for (let j = -2; j < 3; j++) {
-            tetris.set(transform(i, -1, j), 'black');
+            tetris.set(transform(i, -1, j), 'black'); // TODO : change for undefined and update has() instead get() != undefined
         }
     }
 }
@@ -13,5 +13,9 @@ export function transform(x, y, z) {
 }
 
 export function transform2(array) {
-    return array[1] * WIDTH * WIDTH + array[0] * WIDTH + array[2]
+    return array[1] * WIDTH * WIDTH + array[0] * WIDTH + array[2];
+}
+
+export function getFirstIndexNextLevel(level) {
+    return level * WIDTH * WIDTH + WIDTH * Math.floor(WIDTH / 2) + Math.floor(WIDTH / 2) + 1;
 }
