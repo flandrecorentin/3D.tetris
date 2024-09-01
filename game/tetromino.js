@@ -114,6 +114,7 @@ export function play(tetris, scene) {
 
 function addTetrominoTo(tetris) {
     let index = 0;
+    increaseScore(SCORE.tetromino);
     blocks.forEach(function (block) {
         tetris.set(TETRIS.transform2(block), color);
         index++;

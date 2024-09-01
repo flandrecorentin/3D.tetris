@@ -140,8 +140,8 @@ function main() {
         }
 
         document.querySelector('#time').textContent = 'Time : ' + Math.round(time / 1000) + 's';
-        document.querySelector('#score').textContent = 'Score : ' + score; // TODO : Make the score working
-        document.querySelector('#speed').textContent = 'Speed : ' + parseFloat(speed.toFixed(2)) + " ticks/s"; // TODO : Make the speed as expected
+        document.querySelector('#score').textContent = 'Score : ' + score;
+        document.querySelector('#speed').textContent = 'Speed : ' + parseFloat(speed.toFixed(2)) + " ticks/s";
         renderer.render(scene, camera);
 
         TETROMINO.draw(scene)
