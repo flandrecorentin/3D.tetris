@@ -1,6 +1,7 @@
 import { TETROMINOS, TETROMINOS_MAPPING, HEIGHT, WIDTH, DEBUG, SCORE } from '../const.js';
 import * as BLOCK from './block.js';
 import * as TETRIS from './tetris.js';
+import * as HELPER from './helper.js';
 import {increaseScore} from '../main.js'
 
 let blocks = [];
@@ -107,8 +108,9 @@ export function play(tetris, scene) {
         addTetrominoTo(tetris);
         updateLevels(tetris, scene);
         changeTetromino(tetris);
+        HELPER.updateRotateHelperPosition(scene, drawnBlocks[pivot].position)
     }
-    else { applyGravity() }
+    else { applyGravity(scene) }
 
 }
 
@@ -203,13 +205,14 @@ function updateLevels(tetris, scene) {
 
 }
 
-function applyGravity() {
+function applyGravity(scene) {
     let index = 0;
     blocks.forEach(function (block) {
         block[1]--;
         drawnBlocks[index].position.y = block[1];
         index++;
     })
+    HELPER.updateRotateHelperPosition(scene, drawnBlocks[pivot].position);
 }
 
 function changeTetromino(tetris) {
@@ -282,6 +285,8 @@ export function move(direction, tetris, scene) {
         drawnBlocks[index].position.z = block[2];
         index++;
     })
+
+    HELPER.updateRotateHelperPosition(scene, drawnBlocks[pivot].position);
 }
 
 // Rotate operation implies to precises the pivot index block in TETROMINOS (const.js)
