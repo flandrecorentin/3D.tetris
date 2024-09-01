@@ -7,11 +7,23 @@ import * as CAMERA from './game/camera.js';
 import * as BLOCK from './game/block.js';
 import * as TETROMINO from './game/tetromino.js';
 import * as TETRIS from './game/tetris.js';
+import * as HELPER from './game/helper.js';
+
+
+let score = 0
+
+export function increaseScore(increment) {
+    score += increment
+}
+
+let options = {
+    displayRotateHelper: true,
+};
 
 function main() {
 
-    let score = 0;
-    let speed = 1;
+    let speed = 1.3;
+    const speedCoeff = 0.997;
     let prevTime = 0;
     let tetris = new Map();
     TETRIS.initTetris(tetris);
@@ -30,7 +42,8 @@ function main() {
     }
 
     const gui = new GUI();
-    gui.add(camera, 'fov', 25, 150).onChange(updateCamera);
+    gui.add(camera, 'fov', 25, 150).name("Zoom").onChange(updateCamera);
+    gui.add(options, 'displayRotateHelper').name("Rotate Axes Helper Display").onChange(toggleDisplayRotateHelper);
 
     const controls = new OrbitControls(camera, canvas);
     controls.target.set(0, 5, 0);
@@ -91,6 +104,11 @@ function main() {
 
     {
         addControls(scene)
+        HELPER.initRotateHelper(scene);
+    }
+
+    function toggleDisplayRotateHelper() {
+        HELPER.toggleRotateHelperVisibility(scene, options.displayRotateHelper);
     }
 
     function resizeRendererToDisplaySize(renderer) {
@@ -111,7 +129,6 @@ function main() {
 
     function applyGravity() {
         TETROMINO.play(tetris, scene)
-        TETROMINO.draw(scene)
     }
 
     function render(time) {
@@ -120,9 +137,10 @@ function main() {
             camera.position.y = 1
         }
 
-        if (Math.abs(time - prevTime) > 3000) {// TODO change time
-            prevTime = time
-            applyGravity()
+        if (Math.abs(time - prevTime) > speed * 1000) {
+            prevTime = time;
+            speed *= speedCoeff;
+            applyGravity();
         }
 
         if (resizeRendererToDisplaySize(renderer)) {
@@ -132,52 +150,60 @@ function main() {
         }
 
         document.querySelector('#time').textContent = 'Time : ' + Math.round(time / 1000) + 's';
-        document.querySelector('#score').textContent = 'Score : ' + score; // TODO : Make the score working
-        document.querySelector('#speed').textContent = 'Speed : ' + parseFloat(speed.toFixed(2)) + " ticks/s"; // TODO : Make the speed as expected
+        document.querySelector('#score').textContent = 'Score : ' + score;
+        document.querySelector('#speed').textContent = 'Speed : ' + parseFloat(speed.toFixed(2)) + " ticks/s";
         renderer.render(scene, camera);
+
+        TETROMINO.draw(scene)
         requestAnimationFrame(render);
     }
 
     function addControls(scene) {
         const geometry = new THREE.BoxGeometry(1.7, 0.1, 1.7);
         const material = new THREE.MeshPhongMaterial({ color: 0xFFFFFF });
+        const materialRotX = new THREE.MeshPhongMaterial({ color: 0xCC4400 });
+        const materialRotY = new THREE.MeshPhongMaterial({ color: 0x00FF00 });
+        const materialRotZ = new THREE.MeshPhongMaterial({ color: 0x2222DD });
 
         let controlUp = new THREE.Mesh(geometry, material);
         controlUp.position.set(0, -BLOCK.UNIT_SIZE / 2, 5); // TOP = decrease z
+        HELPER.initArrowHelper(scene, { 'x': 0, 'y': -BLOCK.UNIT_SIZE / 2 + 0.1, 'z': 5 + 0.25 }, DOUBLE_PI / 4);
 
         let controlDown = new THREE.Mesh(geometry, material);
         controlDown.position.set(0, -BLOCK.UNIT_SIZE / 2, 9); // DOWN = increase z
+        HELPER.initArrowHelper(scene, { 'x': 0, 'y': -BLOCK.UNIT_SIZE / 2 + 0.1, 'z': 9 - 0.25 }, 3 * DOUBLE_PI / 4);
 
         let controlLeft = new THREE.Mesh(geometry, material);
         controlLeft.position.set(-2, -BLOCK.UNIT_SIZE / 2, 7); // LEFT = decrease x
+        HELPER.initArrowHelper(scene, { 'x': -2 + 0.25 , 'y': -BLOCK.UNIT_SIZE / 2 + 0.1, 'z': 7 }, 2 * DOUBLE_PI / 4);
 
         let controlRight = new THREE.Mesh(geometry, material);
         controlRight.position.set(2, -BLOCK.UNIT_SIZE / 2, 7); // RIGHT = increase x
+        HELPER.initArrowHelper(scene, { 'x': 2 - 0.25 , 'y': -BLOCK.UNIT_SIZE / 2 + 0.1, 'z': 7 });
 
         const cylinderGeometry = new THREE.CylinderGeometry(PI / 4, PI / 4, 0.3, 10);
         let controlGravity = new THREE.Mesh(cylinderGeometry, material);
         controlGravity.position.set(0, -BLOCK.UNIT_SIZE / 2, 7);
 
-        // TODO : Arrows on controls
         scene.add(controlUp);
         scene.add(controlDown);
         scene.add(controlLeft);
         scene.add(controlRight);
         scene.add(controlGravity);
 
-        let controlRotX = new THREE.Mesh(cylinderGeometry, material);
+        let controlRotX = new THREE.Mesh(cylinderGeometry, materialRotX);
         controlRotX.position.set(6, -BLOCK.UNIT_SIZE / 2, 2.5);
 
-        let controlRotY = new THREE.Mesh(cylinderGeometry, material);
+        let controlRotY = new THREE.Mesh(cylinderGeometry, materialRotY);
         controlRotY.position.set(6, -BLOCK.UNIT_SIZE / 2, 0);
 
-        let controlRotZ = new THREE.Mesh(cylinderGeometry, material);
+        let controlRotZ = new THREE.Mesh(cylinderGeometry, materialRotZ);
         controlRotZ.position.set(6, -BLOCK.UNIT_SIZE / 2, -2.5);
 
         scene.add(controlRotX);
         scene.add(controlRotY);
         scene.add(controlRotZ);
-
+    
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
 

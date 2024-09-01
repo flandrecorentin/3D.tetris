@@ -112,6 +112,16 @@ for (let index = 0; index < letters.length; index++) {
     TETROMINOS_MAPPING.set(index, letters[index]);
 }
 
+// Update score section in README.Md
+export const SCORE = {
+    'speed': 2,
+    'tetromino': 4,
+    'single': 100,
+    'double': 300,
+    'triple': 500,
+    'tetris': 800
+};
+
 export const COLORS = {
     'red': 0xEB0045,
     'orange': 0xFF8300,

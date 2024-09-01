@@ -1,6 +1,8 @@
-import { TETROMINOS, TETROMINOS_MAPPING, HEIGHT, WIDTH, DEBUG } from '../const.js';
+import { TETROMINOS, TETROMINOS_MAPPING, HEIGHT, WIDTH, DEBUG, SCORE } from '../const.js';
 import * as BLOCK from './block.js';
 import * as TETRIS from './tetris.js';
+import * as HELPER from './helper.js';
+import {increaseScore} from '../main.js'
 
 let blocks = [];
 let x = 0;
@@ -9,7 +11,9 @@ let z = 0;
 let color = 0;
 let pivot = 0;
 let letterPiece = 'X';
+let nextLetterPiece = 'X';
 let drawnBlocks = [];
+let drawnNextBlocks = [];
 
 export function init(letter) {
     blocks = [];
@@ -18,8 +22,10 @@ export function init(letter) {
     z = 0;
     color = 0;
     drawnBlocks = [];
+    drawnNextBlocks = [];
 
-    letterPiece = letter
+    letterPiece = letter;
+    nextLetterPiece = randomPiece();
     const ref = Object.assign({}, TETROMINOS[letter]);
     ref.blocks.forEach(function (refBlock) {
         blocks.push([refBlock[0], refBlock[1], refBlock[2]]);
@@ -54,6 +60,30 @@ export function draw(scene) {
         drawnBlock.class = "block";
         scene.add(drawnBlock);
     })
+
+    drawNext(scene);
+}
+
+function drawNext(scene) {
+    const nextRef = Object.assign({}, TETROMINOS[nextLetterPiece]);
+
+    const drawnNextBlocksToDelete = scene.children.filter(obj => obj.class == "next-block");
+    drawnNextBlocksToDelete.forEach(function (drawnNextBlockToDelete) {
+        scene.remove(drawnNextBlockToDelete);
+    })
+
+    nextRef.blocks.forEach(function (block) {
+        let drawnBlock = BLOCK.init({ color: nextRef.color });
+        drawnBlock.class = "next-block";
+        drawnBlock.position.set(6 + block[0], -BLOCK.UNIT_SIZE / 2, 7 + block[2]);
+        drawnBlock.scale.y = 0.1;
+
+        drawnNextBlocks.push(drawnBlock);
+    })
+
+    drawnNextBlocks.forEach(function (drawnNextBlock) {
+        scene.add(drawnNextBlock);
+    })
 }
 
 export function play(tetris, scene) {
@@ -78,13 +108,15 @@ export function play(tetris, scene) {
         addTetrominoTo(tetris);
         updateLevels(tetris, scene);
         changeTetromino(tetris);
+        HELPER.updateRotateHelperPosition(scene, drawnBlocks[pivot].position)
     }
-    else { applyGravity() }
+    else { applyGravity(scene) }
 
 }
 
 function addTetrominoTo(tetris) {
     let index = 0;
+    increaseScore(SCORE.tetromino);
     blocks.forEach(function (block) {
         tetris.set(TETRIS.transform2(block), color);
         index++;
@@ -115,6 +147,25 @@ function updateLevels(tetris, scene) {
     })
 
     if (DEBUG && levelsToDelete.length != 0) console.log("Levels to delete: " + levelsToDelete)
+
+    switch (levelsToDelete.length) {
+        case 0:
+            break;
+        case 1:
+            increaseScore(SCORE.single);
+            break;
+        case 2:
+            increaseScore(SCORE.double);
+            break;
+        case 3:
+            increaseScore(SCORE.triple);
+            break;
+        case 4:
+            increaseScore(SCORE.tetris);
+            break;
+        default:
+            console.log("Number of levels deleted invalid ");
+    }
 
 
     levelsToDelete.forEach(function (level) {
@@ -154,17 +205,18 @@ function updateLevels(tetris, scene) {
 
 }
 
-function applyGravity() {
+function applyGravity(scene) {
     let index = 0;
     blocks.forEach(function (block) {
         block[1]--;
         drawnBlocks[index].position.y = block[1];
         index++;
     })
+    HELPER.updateRotateHelperPosition(scene, drawnBlocks[pivot].position);
 }
 
 function changeTetromino(tetris) {
-    const letter = randomPiece();
+    const letter = nextLetterPiece;
     if (DEBUG) { console.log("change Tetromino: " + letter) }
     init(letter);
 }
@@ -203,6 +255,7 @@ export function move(direction, tetris, scene) {
             incrementTransform = +5;
             break;
         case 'gravity':
+            increaseScore(SCORE.speed)
             play(tetris, scene);
             play(tetris, scene);
             break;
@@ -232,6 +285,8 @@ export function move(direction, tetris, scene) {
         drawnBlocks[index].position.z = block[2];
         index++;
     })
+
+    HELPER.updateRotateHelperPosition(scene, drawnBlocks[pivot].position);
 }
 
 // Rotate operation implies to precises the pivot index block in TETROMINOS (const.js)
