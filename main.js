@@ -13,7 +13,8 @@ import * as TETRIS from './game/tetris.js';
 function main() {
 
     let score = 0;
-    let speed = 1;
+    let speed = 1.3;
+    const speedCoeff = 0.997;
     let prevTime = 0;
     let tetris = new Map();
     TETRIS.initTetris(tetris);
@@ -121,9 +122,10 @@ function main() {
             camera.position.y = 1
         }
 
-        if (Math.abs(time - prevTime) > 3000) {// TODO change time
-            prevTime = time
-            applyGravity()
+        if (Math.abs(time - prevTime) > speed*1000) {
+            prevTime = time;
+            speed *= speedCoeff;
+            applyGravity();
         }
 
         if (resizeRendererToDisplaySize(renderer)) {
