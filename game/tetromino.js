@@ -1,6 +1,7 @@
-import { TETROMINOS, TETROMINOS_MAPPING, HEIGHT, WIDTH, DEBUG } from '../const.js';
+import { TETROMINOS, TETROMINOS_MAPPING, HEIGHT, WIDTH, DEBUG, SCORE } from '../const.js';
 import * as BLOCK from './block.js';
 import * as TETRIS from './tetris.js';
+import {increaseScore} from '../main.js'
 
 let blocks = [];
 let x = 0;
@@ -144,6 +145,25 @@ function updateLevels(tetris, scene) {
 
     if (DEBUG && levelsToDelete.length != 0) console.log("Levels to delete: " + levelsToDelete)
 
+    switch (levelsToDelete.length) {
+        case 0:
+            break;
+        case 1:
+            increaseScore(SCORE.single);
+            break;
+        case 2:
+            increaseScore(SCORE.double);
+            break;
+        case 3:
+            increaseScore(SCORE.triple);
+            break;
+        case 4:
+            increaseScore(SCORE.tetris);
+            break;
+        default:
+            console.log("Number of levels deleted invalid ");
+    }
+
 
     levelsToDelete.forEach(function (level) {
         for (let x = min; x < max; x++) {
@@ -231,6 +251,7 @@ export function move(direction, tetris, scene) {
             incrementTransform = +5;
             break;
         case 'gravity':
+            increaseScore(SCORE.speed)
             play(tetris, scene);
             play(tetris, scene);
             break;

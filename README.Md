@@ -10,6 +10,16 @@ You can use the buttons to move pieces that are falling on the ground and make a
 
 **Circles controls** (on the right of the screen by default) allow to rotate pieces on x, y, z axes.
 
+## Score 
+
+Action | #Score
+--- | --- 
+Speed click | 2 
+Tetromino placed | 4
+Single | 100 
+Double | 300 
+Triple | 500 
+Tetris | 800 
 
 ## How to **use** the app
 

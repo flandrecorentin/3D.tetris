@@ -10,9 +10,14 @@ import * as BLOCK from './game/block.js';
 import * as TETROMINO from './game/tetromino.js';
 import * as TETRIS from './game/tetris.js';
 
+let score = 0
+
+export function increaseScore(increment) {
+    score += increment
+}
+
 function main() {
 
-    let score = 0;
     let speed = 1.3;
     const speedCoeff = 0.997;
     let prevTime = 0;
