@@ -18,7 +18,7 @@ export function increaseScore(increment) {
 
 let options = {
     displayRotateHelper: true,
-}; 
+};
 
 function main() {
 
@@ -43,7 +43,7 @@ function main() {
 
     const gui = new GUI();
     gui.add(camera, 'fov', 25, 150).name("Zoom").onChange(updateCamera);
-    gui.add(options, 'displayRotateHelper').name("Rotate Helper Display").onChange(toggleDisplayRotateHelper);
+    gui.add(options, 'displayRotateHelper').name("Rotate Axes Helper Display").onChange(toggleDisplayRotateHelper);
 
     const controls = new OrbitControls(camera, canvas);
     controls.target.set(0, 5, 0);
@@ -137,7 +137,7 @@ function main() {
             camera.position.y = 1
         }
 
-        if (Math.abs(time - prevTime) > speed*1000) {
+        if (Math.abs(time - prevTime) > speed * 1000) {
             prevTime = time;
             speed *= speedCoeff;
             applyGravity();
@@ -167,21 +167,24 @@ function main() {
 
         let controlUp = new THREE.Mesh(geometry, material);
         controlUp.position.set(0, -BLOCK.UNIT_SIZE / 2, 5); // TOP = decrease z
+        HELPER.initArrowHelper(scene, { 'x': 0, 'y': -BLOCK.UNIT_SIZE / 2 + 0.1, 'z': 5 + 0.25 }, DOUBLE_PI / 4);
 
         let controlDown = new THREE.Mesh(geometry, material);
         controlDown.position.set(0, -BLOCK.UNIT_SIZE / 2, 9); // DOWN = increase z
+        HELPER.initArrowHelper(scene, { 'x': 0, 'y': -BLOCK.UNIT_SIZE / 2 + 0.1, 'z': 9 - 0.25 }, 3 * DOUBLE_PI / 4);
 
         let controlLeft = new THREE.Mesh(geometry, material);
         controlLeft.position.set(-2, -BLOCK.UNIT_SIZE / 2, 7); // LEFT = decrease x
+        HELPER.initArrowHelper(scene, { 'x': -2 + 0.25 , 'y': -BLOCK.UNIT_SIZE / 2 + 0.1, 'z': 7 }, 2 * DOUBLE_PI / 4);
 
         let controlRight = new THREE.Mesh(geometry, material);
         controlRight.position.set(2, -BLOCK.UNIT_SIZE / 2, 7); // RIGHT = increase x
+        HELPER.initArrowHelper(scene, { 'x': 2 - 0.25 , 'y': -BLOCK.UNIT_SIZE / 2 + 0.1, 'z': 7 });
 
         const cylinderGeometry = new THREE.CylinderGeometry(PI / 4, PI / 4, 0.3, 10);
         let controlGravity = new THREE.Mesh(cylinderGeometry, material);
         controlGravity.position.set(0, -BLOCK.UNIT_SIZE / 2, 7);
 
-        // TODO : Arrows on controls
         scene.add(controlUp);
         scene.add(controlDown);
         scene.add(controlLeft);
