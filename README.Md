@@ -21,9 +21,7 @@ Double | 300
 Triple | 500 
 Tetris | 800 
 
-## How to **use** the app
-
-### Development environment
+## How to **start** locally
 
 1. Install Node.js: https://nodejs.org/en
 
@@ -42,9 +40,29 @@ npm install --save-dev vite
 npx vite
 ````    
 
-### Deploy in Production
+## How to **deploy** 3D.tetris
+
+Deployment is made with the Pages service from Github. For that, use branch gh-pages.
+
+Use the following command :
+
 ````{terminal}
-npx vite build
+npx vite build --outDir="./docs"
 ````
 
-will create dist/ folder. The contents of that folder are ready to be hosted.
+will create docs/ folder. The contents of that folder are ready to be hosted.
+
+---- 
+
+Due to possible conflicts on other deployments (like for flandrecorentin.github.io), you may need to remove the root '/'
+
+
+````html
+<!-- From -->
+<script type="module" crossorigin src="/assets/_______.js"></script>
+<link rel="stylesheet" crossorigin href="/assets/_______.css">
+
+<!-- To -->
+<script type="module" crossorigin src="assets/_______.js"></script>
+<link rel="stylesheet" crossorigin href="assets/_______.css">
+````
