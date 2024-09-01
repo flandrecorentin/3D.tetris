@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+// import { CSS2DRenderer, CSS2DObject } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/renderers/CSS2DRenderer.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
@@ -111,7 +113,6 @@ function main() {
 
     function applyGravity() {
         TETROMINO.play(tetris, scene)
-        TETROMINO.draw(scene)
     }
 
     function render(time) {
@@ -135,6 +136,8 @@ function main() {
         document.querySelector('#score').textContent = 'Score : ' + score; // TODO : Make the score working
         document.querySelector('#speed').textContent = 'Speed : ' + parseFloat(speed.toFixed(2)) + " ticks/s"; // TODO : Make the speed as expected
         renderer.render(scene, camera);
+
+        TETROMINO.draw(scene)
         requestAnimationFrame(render);
     }
 
@@ -177,7 +180,7 @@ function main() {
         scene.add(controlRotX);
         scene.add(controlRotY);
         scene.add(controlRotZ);
-
+    
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
 

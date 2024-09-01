@@ -9,7 +9,9 @@ let z = 0;
 let color = 0;
 let pivot = 0;
 let letterPiece = 'X';
+let nextLetterPiece = 'X';
 let drawnBlocks = [];
+let drawnNextBlocks = [];
 
 export function init(letter) {
     blocks = [];
@@ -18,8 +20,10 @@ export function init(letter) {
     z = 0;
     color = 0;
     drawnBlocks = [];
+    drawnNextBlocks = [];
 
-    letterPiece = letter
+    letterPiece = letter;
+    nextLetterPiece = randomPiece();
     const ref = Object.assign({}, TETROMINOS[letter]);
     ref.blocks.forEach(function (refBlock) {
         blocks.push([refBlock[0], refBlock[1], refBlock[2]]);
@@ -53,6 +57,30 @@ export function draw(scene) {
     drawnBlocks.forEach(function (drawnBlock) {
         drawnBlock.class = "block";
         scene.add(drawnBlock);
+    })
+
+    drawNext(scene);
+}
+
+function drawNext(scene) {
+    const nextRef = Object.assign({}, TETROMINOS[nextLetterPiece]);
+
+    const drawnNextBlocksToDelete = scene.children.filter(obj => obj.class == "next-block");
+    drawnNextBlocksToDelete.forEach(function (drawnNextBlockToDelete) {
+        scene.remove(drawnNextBlockToDelete);
+    })
+
+    nextRef.blocks.forEach(function (block) {
+        let drawnBlock = BLOCK.init({ color: nextRef.color });
+        drawnBlock.class = "next-block";
+        drawnBlock.position.set(6 + block[0], -BLOCK.UNIT_SIZE / 2, 7 + block[2]);
+        drawnBlock.scale.y = 0.1;
+
+        drawnNextBlocks.push(drawnBlock);
+    })
+
+    drawnNextBlocks.forEach(function (drawnNextBlock) {
+        scene.add(drawnNextBlock);
     })
 }
 
@@ -164,7 +192,7 @@ function applyGravity() {
 }
 
 function changeTetromino(tetris) {
-    const letter = randomPiece();
+    const letter = nextLetterPiece;
     if (DEBUG) { console.log("change Tetromino: " + letter) }
     init(letter);
 }
