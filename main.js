@@ -11,10 +11,14 @@ import * as HELPER from './game/helper.js';
 import * as LIGHT from './game/light.js';
 
 
-let score = 0
+let score = 0;
 
 export function increaseScore(increment) {
-    score += increment
+    score += increment;
+}
+
+export function getScore() {
+    return score;
 }
 
 let options = {
@@ -27,6 +31,8 @@ function main() {
     const speedCoeff = 0.997;
     let prevTime = 0;
     let tetris = new Map();
+    document.getElementById('end').style.display = "none";
+
     TETRIS.initTetris(tetris);
     TETROMINO.init(TETROMINO.randomPiece());
 
@@ -52,8 +58,9 @@ function main() {
 
     const gui = new GUI();
     gui.add(camera, 'fov', 25, 150).name("Zoom").onChange(updateCamera);
-    gui.add(options, 'displayRotateHelper').name("Rotate Axes Helper Display").onChange(
-        () => { HELPER.toggleRotateHelperVisibility(scene, options.displayRotateHelper) });
+    gui.add(options, 'displayRotateHelper').name("Rotate Axes Helper Display").onChange(() => {
+        HELPER.toggleRotateHelperVisibility(scene, options.displayRotateHelper)
+    });
 
     HELPER.initGridHelper(scene);
     HELPER.initRotateHelper(scene);

@@ -2,7 +2,7 @@ import { TETROMINOS, TETROMINOS_MAPPING, HEIGHT, WIDTH, DEBUG, SCORE } from '../
 import * as BLOCK from './block.js';
 import * as TETRIS from './tetris.js';
 import * as HELPER from './helper.js';
-import { increaseScore } from '../main.js'
+import { increaseScore, getScore } from '../main.js'
 
 let blocks = [];
 let x = 0;
@@ -218,11 +218,12 @@ function changeTetromino(tetris) {
     init(letter);
 }
 
-// TODO : making end game works
 function endGame() {
     if (DEBUG) { console.log("End") }
 
-    console.log("End game");
+    document.getElementById('end').style.display = "block";
+    const finalScore = getScore();
+    document.getElementById('end').textContent = "End ! Score : " + finalScore;
 }
 
 export function randomPiece() {
