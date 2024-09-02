@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { HEIGHT, DEBUG, DOUBLE_PI } from '../const.js';
+import { UNIT_SIZE } from './block.js';
 
 const SIZE_AXES = 3
 
@@ -45,4 +46,23 @@ export function initArrowHelper(scene, positions, rotate = 0) {
     groupTest.rotation.y += rotate;
 
     scene.add(groupTest);
+}
+
+export function initGridHelper(scene) {
+    const planeSize = 5;
+
+    const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
+    const planeMat = new THREE.MeshPhongMaterial({
+        side: THREE.DoubleSide,
+        color: 0xDDDDDD
+    });
+    const mesh = new THREE.Mesh(planeGeo, planeMat);
+    mesh.rotation.x = Math.PI * - .5;
+    mesh.position.y = mesh.position.y - UNIT_SIZE / 2;
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+
+    const gridHelper = new THREE.GridHelper(planeSize, planeSize, 0x333333, 0x333333);
+    gridHelper.position.y -= UNIT_SIZE / 2;
+    scene.add(gridHelper);
 }
