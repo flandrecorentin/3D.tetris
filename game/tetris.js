@@ -3,7 +3,7 @@ import { WIDTH } from '../const.js';
 export function initTetris(tetris) {
     for (let i = -2; i < 3; i++) {
         for (let j = -2; j < 3; j++) {
-            tetris.set(transform(i, -1, j), 'black'); // TODO : change for undefined and update has() instead get() != undefined
+            tetris.set(transform(i, -1, j), undefined);
         }
     }
 }

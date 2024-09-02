@@ -2,18 +2,23 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
-import { PI, DOUBLE_PI, DEBUG, WIDTH } from './const.js';
+import { PI, DOUBLE_PI, DEBUG } from './const.js';
 import * as CAMERA from './game/camera.js';
 import * as BLOCK from './game/block.js';
 import * as TETROMINO from './game/tetromino.js';
 import * as TETRIS from './game/tetris.js';
 import * as HELPER from './game/helper.js';
+import * as LIGHT from './game/light.js';
 
 
-let score = 0
+let score = 0;
 
 export function increaseScore(increment) {
-    score += increment
+    score += increment;
+}
+
+export function getScore() {
+    return score;
 }
 
 let options = {
@@ -26,6 +31,8 @@ function main() {
     const speedCoeff = 0.997;
     let prevTime = 0;
     let tetris = new Map();
+    document.getElementById('end').style.display = "none";
+
     TETRIS.initTetris(tetris);
     TETROMINO.init(TETROMINO.randomPiece());
 
@@ -41,106 +48,48 @@ function main() {
         camera.updateProjectionMatrix();
     }
 
-    const gui = new GUI();
-    gui.add(camera, 'fov', 25, 150).name("Zoom").onChange(updateCamera);
-    gui.add(options, 'displayRotateHelper').name("Rotate Axes Helper Display").onChange(toggleDisplayRotateHelper);
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x040418);
 
     const controls = new OrbitControls(camera, canvas);
     controls.target.set(0, 5, 0);
     controls.update();
+    addControls(scene)
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x040418);
+    const gui = new GUI();
+    gui.add(camera, 'fov', 25, 150).name("Field of View").onChange(updateCamera);
+    gui.add(options, 'displayRotateHelper').name("Rotate Axes Helper Display").onChange(() => {
+        HELPER.toggleRotateHelperVisibility(scene, options.displayRotateHelper)
+    });
 
-    {
+    HELPER.initGridHelper(scene);
+    HELPER.initRotateHelper(scene);
 
-        const planeSize = 5;
-
-        const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
-        const planeMat = new THREE.MeshPhongMaterial({
-            side: THREE.DoubleSide,
-            color: 0xDDDDDD
-        });
-        const mesh = new THREE.Mesh(planeGeo, planeMat);
-        mesh.rotation.x = Math.PI * - .5;
-        mesh.position.y = mesh.position.y - BLOCK.UNIT_SIZE / 2;
-        mesh.receiveShadow = true;
-        scene.add(mesh);
-
-        const gridHelper = new THREE.GridHelper(planeSize, planeSize, 0x333333, 0x333333);
-        gridHelper.position.y -= BLOCK.UNIT_SIZE / 2;
-        scene.add(gridHelper);
-    }
-
-    {
-        const color = 0xDDDDDD;
-        const ambIntensity = 1;
-        const ambLight = new THREE.AmbientLight(color, ambIntensity);
-        scene.add(ambLight);
-
-        const dirIntensity = 0.4;
-        const dirLight = new THREE.DirectionalLight(color, dirIntensity);
-        dirLight.position.set(15, 20, 40);
-        dirLight.target.position.set(10, 20, 40);
-        scene.add(dirLight);
-        scene.add(dirLight.target);
-
-        const shadowIntensity = 2
-        const colorShadow = 0xFFFFFF
-        const shadowLight = new THREE.DirectionalLight(colorShadow, shadowIntensity);
-        shadowLight.castShadow = true;
-        shadowLight.position.set(0, 20, 0);
-        shadowLight.target.position.set(0, 0, 0);
-        scene.add(shadowLight);
-        scene.add(shadowLight.target);
-
-        if (DEBUG) {
-            const helper = new THREE.DirectionalLightHelper(dirLight);
-            scene.add(helper);
-            const helperShadow = new THREE.DirectionalLightHelper(shadowLight);
-            scene.add(helperShadow);
-        }
-    }
-
-    {
-        addControls(scene)
-        HELPER.initRotateHelper(scene);
-    }
-
-    function toggleDisplayRotateHelper() {
-        HELPER.toggleRotateHelperVisibility(scene, options.displayRotateHelper);
-    }
+    LIGHT.initLights(scene);
 
     function resizeRendererToDisplaySize(renderer) {
-
         const canvas = renderer.domElement;
         const width = canvas.clientWidth;
         const height = canvas.clientHeight;
         const needResize = canvas.width !== width || canvas.height !== height;
+
         if (needResize) {
-
             renderer.setSize(width, height, false);
-
         }
 
         return needResize;
-
-    }
-
-    function applyGravity() {
-        TETROMINO.play(tetris, scene)
     }
 
     function render(time) {
 
         if (camera.position.y < 1) {
-            camera.position.y = 1
+            camera.position.y = 1;
         }
 
         if (Math.abs(time - prevTime) > speed * 1000) {
             prevTime = time;
             speed *= speedCoeff;
-            applyGravity();
+            TETROMINO.play(tetris, scene);
         }
 
         if (resizeRendererToDisplaySize(renderer)) {
@@ -175,11 +124,11 @@ function main() {
 
         let controlLeft = new THREE.Mesh(geometry, material);
         controlLeft.position.set(-2, -BLOCK.UNIT_SIZE / 2, 7); // LEFT = decrease x
-        HELPER.initArrowHelper(scene, { 'x': -2 + 0.25 , 'y': -BLOCK.UNIT_SIZE / 2 + 0.1, 'z': 7 }, 2 * DOUBLE_PI / 4);
+        HELPER.initArrowHelper(scene, { 'x': -2 + 0.25, 'y': -BLOCK.UNIT_SIZE / 2 + 0.1, 'z': 7 }, 2 * DOUBLE_PI / 4);
 
         let controlRight = new THREE.Mesh(geometry, material);
         controlRight.position.set(2, -BLOCK.UNIT_SIZE / 2, 7); // RIGHT = increase x
-        HELPER.initArrowHelper(scene, { 'x': 2 - 0.25 , 'y': -BLOCK.UNIT_SIZE / 2 + 0.1, 'z': 7 });
+        HELPER.initArrowHelper(scene, { 'x': 2 - 0.25, 'y': -BLOCK.UNIT_SIZE / 2 + 0.1, 'z': 7 });
 
         const cylinderGeometry = new THREE.CylinderGeometry(PI / 4, PI / 4, 0.3, 10);
         let controlGravity = new THREE.Mesh(cylinderGeometry, material);
@@ -203,7 +152,7 @@ function main() {
         scene.add(controlRotX);
         scene.add(controlRotY);
         scene.add(controlRotZ);
-    
+
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
 
