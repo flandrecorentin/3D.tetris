@@ -57,7 +57,7 @@ function main() {
     addControls(scene)
 
     const gui = new GUI();
-    gui.add(camera, 'fov', 25, 150).name("Zoom").onChange(updateCamera);
+    gui.add(camera, 'fov', 25, 150).name("Field of View").onChange(updateCamera);
     gui.add(options, 'displayRotateHelper').name("Rotate Axes Helper Display").onChange(() => {
         HELPER.toggleRotateHelperVisibility(scene, options.displayRotateHelper)
     });
