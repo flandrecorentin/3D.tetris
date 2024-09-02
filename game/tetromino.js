@@ -2,7 +2,7 @@ import { TETROMINOS, TETROMINOS_MAPPING, HEIGHT, WIDTH, DEBUG, SCORE } from '../
 import * as BLOCK from './block.js';
 import * as TETRIS from './tetris.js';
 import * as HELPER from './helper.js';
-import {increaseScore} from '../main.js'
+import { increaseScore } from '../main.js'
 
 let blocks = [];
 let x = 0;
@@ -56,6 +56,7 @@ export function init(letter) {
 
 export function draw(scene) {
     if (DEBUG) { console.log(blocks) }
+
     drawnBlocks.forEach(function (drawnBlock) {
         drawnBlock.class = "block";
         scene.add(drawnBlock);
@@ -94,23 +95,19 @@ export function play(tetris, scene) {
     let next = true;
     blocks.forEach(function (block) {
         let transfo = TETRIS.transform(block[0], block[1] - 1, block[2])
-        if (tetris.get(transfo) != undefined) {
-            if (block[1] == HEIGHT) {
-                end = true;
-            }
-            else {
-                next = false;
-            }
+        if (tetris.has(transfo)) {
+            if (block[1] == HEIGHT) { end = true; }
+            else { next = false; }
         }
     })
+
     if (end) { endGame() }
     else if (!next) {
         addTetrominoTo(tetris);
         updateLevels(tetris, scene);
         changeTetromino(tetris);
         HELPER.updateRotateHelperPosition(scene, drawnBlocks[pivot].position)
-    }
-    else { applyGravity(scene) }
+    } else { applyGravity(scene) }
 
 }
 
@@ -266,7 +263,7 @@ export function move(direction, tetris, scene) {
     let validity = true
     blocks.forEach(function (block) {
         const currIncrement = TETRIS.transform2(block)
-        if (tetris.get(currIncrement + incrementTransform) != undefined
+        if (tetris.has(currIncrement + incrementTransform)
             || block[0] + incrementX > 2
             || block[0] + incrementX < -2
             || block[2] + incrementZ > 2
@@ -319,7 +316,7 @@ export function rotate(direction, tetris) {
                     console.log("Non-existent rotation")
             }
 
-            if (tetris.get(blocksRotated[index]) != undefined
+            if (tetris.has(blocksRotated[index])
                 || blocksRotated[index][0] > 2
                 || blocksRotated[index][0] < -2
                 || blocksRotated[index][2] > 2
